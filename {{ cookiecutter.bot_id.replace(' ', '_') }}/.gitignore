@@ -1,0 +1,15 @@
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Temp files
+framework/__pycache__
+geckodriver.log
+output/
+temp/
+
+#Other
+.vscode

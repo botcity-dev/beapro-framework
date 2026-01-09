@@ -1,0 +1,6 @@
+{
+    "bot_id": "BeaPro Bot Template",
+    "_copy_without_render": [
+        "framework/report.py"
+    ]
+}
