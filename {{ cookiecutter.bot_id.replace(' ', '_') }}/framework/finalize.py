@@ -72,20 +72,26 @@ def upload_output_orchestrator():
     """
     Uploads the whole output folder to the BotCity Orchestrator.
     """
-    try:
-        logger.info(
-            f"Uploading output to BotCity Orchestrator as Result Files...")
-        for f in glob.iglob("./output/*"):
+    logger.info(
+        f"Uploading output to BotCity Orchestrator as Result Files...")
+    for f in glob.iglob("./output/*"):
+        try:
             fp = Path(f)
+            # todo add error handling for individual files (e.g. if file is
+            # locked, too large, etc.) - currently it will just skip and log
+            # the error
             STATE.maestro.post_artifact(
                 task_id=STATE.task_id,
                 artifact_name=fp.name,
                 filepath=fp
             )
-
-    except Exception as ex:
-        print(f"Error uploading output to BotCity Orchestrator: {ex}")
-        raise ex
+        except Exception as ex:
+            STATE.maestro.alert(
+                task_id=STATE.task_id,
+                title="Error uploading output to BotCity Orchestrator",
+                message=f"Error uploading file {f} to BotCity Orchestrator: {ex}. Check the Runner Logs for more details.",
+                alert_type=AlertType.ERROR)
+            print(f"Error uploading file {f} to BotCity Orchestrator: {ex}")
 
 
 def finish_task_orchestrator():
