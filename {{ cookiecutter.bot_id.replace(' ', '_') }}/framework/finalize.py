@@ -125,7 +125,36 @@ def finish_status_message() -> str:
         In our run for task {STATE.task_id} we processed {STATE.total_items} items, from which {STATE.success_count} were with success.
         Check the Result Files for more details.
         '''
+        # Append optional extra message from STATE.finish_message_extra if
+        # present
+        extra = getattr(STATE, "finish_message_extra", None)
+        if extra:
+            msg = msg + str(extra)
         return msg
     except Exception as ex:
         logger.error(f"Error generating finish status message: {ex}")
         return "Task completed. Check the Result Files for more details."
+
+def append_finish_status_message(extra: str) -> None:
+    """
+    Append extra text to be included into finish_status_message.
+    Stores a single string at STATE.finish_message_extra (concatenates with newlines).
+    Will not add the text if an existing line is exactly the same (after trimming).
+    """
+    try:
+        new = str(extra).strip()
+        if not new:
+            return
+        current = getattr(STATE, "finish_message_extra", "")
+        # check for exact duplicate among existing lines (trimmed)
+        existing_lines = [line.strip()
+                          for line in current.splitlines() if line.strip()]
+        if new in existing_lines:
+            logger.debug("Duplicate finish status message skipped.")
+            return
+        if current:
+            STATE.finish_message_extra = f"{current} {new}"
+        else:
+            STATE.finish_message_extra = new
+    except Exception as ex:
+        logger.error(f"Error appending finish status message: {ex}")
