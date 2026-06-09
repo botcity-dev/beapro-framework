@@ -86,12 +86,13 @@ def upload_output_orchestrator():
                 filepath=fp
             )
         except Exception as ex:
+            print(f"Error uploading file {f} to BotCity Orchestrator: {ex}")
             STATE.maestro.alert(
                 task_id=STATE.task_id,
                 title="Error uploading output to BotCity Orchestrator",
                 message=f"Error uploading file {f} to BotCity Orchestrator: {ex}. Check the Runner Logs for more details.",
                 alert_type=AlertType.ERROR)
-            print(f"Error uploading file {f} to BotCity Orchestrator: {ex}")
+            STATE.maestro.error(task_id=STATE.task_id, exception=ex)
 
 
 def finish_task_orchestrator():
