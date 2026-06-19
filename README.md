@@ -44,16 +44,27 @@ BeaPro/
 
 ### Setup Steps
 
-1. **Clone or download the project**
+1. **Install cookiecutter** (if not already installed)
+   ```bash
+   pip install cookiecutter
+   ```
 
-2. **Install dependencies**
+2. **Generate your project**
+   ```bash
+   cookiecutter https://github.com/botcity-dev/beapro-framework.git
+   ```
+
+3. **Follow the prompts**
+   - `bot_id`: Name for your bot (e.g. `My Automation Bot`) — used to name the project folder
+
+4. **Install dependencies**
    - Run: `pip install -r requirements.txt`
 
-3. **Configure environment variables**
+5. **Configure environment variables**
    - Edit the `.env` file with your BotCity credentials
    - Required variables: SERVER, LOGIN, KEY, TASK_ID
 
-4. **Configure your data source**
+6. **Configure your data source**
    - Edit `framework/datasources.py` (line 120)
    - Choose between CSVSource, DatapoolSource or add your own data source.
 
