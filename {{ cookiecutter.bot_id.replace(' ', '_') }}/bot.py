@@ -1,14 +1,3 @@
-from framework.state import STATE
-from framework.exceptions import BusinessException, SystemException, InterruptException
-from framework.status_handling import handle_interrupt_requested, handle_business_exception, handle_system_exception, register_success
-from framework.process import process_item
-from framework.datasources import *
-from framework.initialize import initialize
-from framework.finalize import cleanup, finalize
-import time
-
-logger = logging.getLogger(__name__)
-
 """BeaPro Automation Outline
 
 This is the main automation file that orchestrates the bot execution flow.
@@ -26,6 +15,22 @@ The BeaPro framework automatically handles:
 - Logging, and more. Check the README.md for more information.
 """
 
+import logging
+
+from framework.datasources import data_source
+from framework.exceptions import BusinessException, InterruptException
+from framework.finalize import cleanup, finalize
+from framework.initialize import initialize
+from framework.process import process_item
+from framework.status_handling import (
+    handle_business_exception,
+    handle_interrupt_requested,
+    handle_system_exception,
+    register_success,
+)
+
+logger = logging.getLogger(__name__)
+
 
 def action():
     try:
@@ -39,12 +44,12 @@ def action():
                 handle_interrupt_requested(ex)
             except BusinessException as ex:
                 handle_business_exception(ex)
-            except (SystemException, Exception) as ex:
+            except Exception as ex:
                 handle_system_exception(ex)
                 initialize(restart=True)
             else:
                 register_success(
-                    f"Item processed successfuly: {result_message}")
+                    f"Item processed successfully: {result_message}")
 
     except Exception as ex:
         logger.error(f"Error: {ex}")

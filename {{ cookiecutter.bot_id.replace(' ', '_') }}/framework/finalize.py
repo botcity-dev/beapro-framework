@@ -1,18 +1,17 @@
-from .state import STATE
-from botcity.maestro import *
-from .logger import *
-import logging
-from .datasources import *
-import glob
-from pathlib import Path
-
-logger = logging.getLogger(__name__)
-
-
-'''
+"""
 finalize.py
     Gracefully ends the automation process using Cleanup and Finalize steps.
-'''
+"""
+
+import glob
+import logging
+from pathlib import Path
+
+from botcity.maestro import AlertType
+
+from .state import STATE
+
+logger = logging.getLogger(__name__)
 
 
 def cleanup():
@@ -41,9 +40,7 @@ def finalize():
     """
     try:
         logger.info(
-            f"The automation process has finished. Task ID: {
-                STATE.task_id}. {
-                finish_status_message()}")
+            f"The automation process has finished. Task ID: {STATE.task_id}. {finish_status_message()}")
 
         # Send emails/Alerts
         # logger.info(f"Sending emails/alerts")
