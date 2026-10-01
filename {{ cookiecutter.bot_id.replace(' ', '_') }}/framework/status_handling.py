@@ -1,17 +1,17 @@
-import datetime
-import logging
-from .datasources import *
-from .finalize import *
-from .state import STATE
-from atexit import register
-from botcity.maestro import *
-
-'''
+"""
 status_handling.py
     Provides exception handling, error reporting, and success registration for BotCity automation.
     Handles business exceptions, system exceptions, and interruption requests
     with alerting and screenshot capabilities.
-'''
+"""
+
+import datetime
+import logging
+
+from botcity.maestro import AlertType
+
+from .datasources import data_source
+from .state import STATE
 
 logger = logging.getLogger(__name__)
 maestro = STATE.maestro
@@ -25,8 +25,7 @@ def handle_business_exception(exception: Exception):
     maestro.alert(
         task_id=STATE.task_id,
         title="Business Exception ocurred.",
-        message=f"Exception: {exception}, Item: {
-            STATE.item}.",
+        message=f"Exception: {exception}, Item: {STATE.item}.",
         alert_type=AlertType.ERROR)
     screenshot_error_report(exception)
     # You can add more steps here if needed!
@@ -42,8 +41,7 @@ def handle_system_exception(exception: Exception):
     maestro.alert(
         task_id=STATE.task_id,
         title="System Exception ocurred.",
-        message=f"Check the logs for more information. Item: {
-            STATE.item}.",
+        message=f"Check the logs for more information. Item: {STATE.item}.",
         alert_type=AlertType.ERROR)
     screenshot_error_report(exception)
     # You can add more steps here if needed!
@@ -87,7 +85,7 @@ def register_success(message):
     """
     Logs a successful item processing and records it in State and Datasource.
     """
-    logger.info(f"Item processing successfull: item: {STATE.item}, {message}")
+    logger.info(f"Item processing successful: item: {STATE.item}, {message}")
     STATE.register_success()
     data_source.report_success(message)
 

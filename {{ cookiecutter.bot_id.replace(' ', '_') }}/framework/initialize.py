@@ -1,22 +1,21 @@
-import logging
-import shutil
-from .exceptions import *
-from .finalize import cleanup
-from .logger import setup_botcity_log, setup_logger
-from .state import STATE
-from botcity.core import DesktopBot
-from botcity.maestro import *
-from botcity.web import Browser, By, WebBot
-from pathlib import Path
-
-logger = logging.getLogger(__name__)
-
-'''
+"""
 initialize.py
     Starts the automation process by setting up the logger, cleaning the output directory, and opening the browser.
     Handles both initial startup and restart scenarios.
+"""
 
-'''
+import logging
+import shutil
+from pathlib import Path
+
+from botcity.core import DesktopBot
+from botcity.web import WebBot
+
+from .finalize import cleanup
+from .logger import setup_botcity_log, setup_logger
+from .state import STATE
+
+logger = logging.getLogger(__name__)
 
 
 def run_once():
@@ -29,9 +28,7 @@ def run_once():
         setup_botcity_log()
         execution = STATE.execution
         logger.info(
-            f"Automation {
-                STATE.task_info().activity_name} started. Task ID: {
-                execution.task_id}")
+            f"Automation {STATE.task_info().activity_name} started. Task ID: {execution.task_id}")
         print(f"Task ID: {execution.task_id}")
         if execution.parameters:
             print(f"Task Parameters are: {execution.parameters}")

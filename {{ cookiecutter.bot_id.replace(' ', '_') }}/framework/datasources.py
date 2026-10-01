@@ -1,18 +1,18 @@
-import datetime
-import logging
-from .state import STATE
-from botcity.maestro import *
-from botcity.plugins.csv import BotCSVPlugin
-import logging
-import datetime
-
-logger = logging.getLogger(__name__)
-
-'''
+"""
 datasources.py
     Sets up data sources. Provides ready-to-use DatapoolSource and CSVSource classes.
     To create your own data source class, inherit from BaseSource.
-'''
+"""
+
+import datetime
+import logging
+
+from botcity.maestro import ErrorType
+from botcity.plugins.csv import BotCSVPlugin
+
+from .state import STATE
+
+logger = logging.getLogger(__name__)
 
 
 class BaseSource():
@@ -39,8 +39,7 @@ class DatapoolSource(BaseSource):
     def __next__(self):
         if not self.dp.is_active():
             logger.warning(
-                f"Datapool {
-                    self.dp.label} isn't active. You can activate it in the BotCity Orchestrator.")
+                f"Datapool {self.dp.label} isn't active. You can activate it in the BotCity Orchestrator.")
             raise StopIteration
         if not self.dp.has_next():
             logger.info(f"Datapool {self.dp.label} has no more items.")
@@ -77,8 +76,9 @@ class CSVSource(BaseSource):
         self.csv_out_file = self.csv_result_file()
         self.csv_out.set_header(
             self.csv.header + ["TIMESTAMP", "STATUS", "MESSAGE"])
+        self.dataframe = self.csv.as_dataframe()
         self.index = 0
-        self.count = len(self.csv.as_dataframe().index)
+        self.count = len(self.dataframe.index)
         self.current_item = None
 
     def __str__(self):
@@ -95,14 +95,18 @@ class CSVSource(BaseSource):
         if self.index >= self.count:
             logger.info(f"CSV {self._file} has no more items.")
             raise StopIteration
-        item = self.csv.as_dataframe().loc[self.index].to_dict()
+        item = self.dataframe.loc[self.index].to_dict()
         self.index += 1
         STATE.item = item
         self.current_item = item
         return item
 
     def _report(self, status, status_message):
+        if self.current_item is None:
+            return
         if not self.current_item:
+            logger.warning(
+                f"CSV {self._file} has an empty row, skipping report.")
             return
 
         self.current_item.update({
@@ -130,6 +134,13 @@ class CSVSource(BaseSource):
 Setting Datasource: Datapool | CSV
 """
 
-data_source = DatapoolSource("BeaPro-Datapool")
-# data_source = CSVSource(r"./resources/your_file.csv")
-logger.info(f"Datasource set to {data_source}.")
+try:
+    data_source = DatapoolSource("BeaPro-Datapool")
+    # data_source = CSVSource(r"./resources/your_file.csv")
+    logger.info(f"Datasource set to {data_source}.")
+except Exception as ex:
+    logger.error(
+        f"Failed to set up data_source: {ex}. Check that the datapool "
+        "label exists and is active in the BotCity Orchestrator, or that "
+        "the CSV file path is correct.")
+    raise
