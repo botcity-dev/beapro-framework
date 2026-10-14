@@ -1,23 +1,24 @@
-import datetime
-import logging
-from .state import STATE
-from botcity.maestro import *
-from logging import basicConfig, getLogger
-
-'''
+"""
 Logger
     Configure logging for the automation process. This module sets up both file-based and BotCity logging.
     - Creates dated log files in the output directory
     - Sets up logging format with timestamps
-    - Configures BotCity's built-in Execution Log 
+    - Configures BotCity's built-in Execution Log
     - Provides a reusable logger instance
 
     Usage:
         Import the logger in other files with:
         logger = logging.getLogger(__name__)
         logger.info(f"Add your message including {variables}.")
-'''
+"""
 
+import datetime
+import logging
+from logging import basicConfig
+
+from botcity.maestro import Column
+
+from .state import STATE
 
 logger = logging.getLogger(__name__)
 

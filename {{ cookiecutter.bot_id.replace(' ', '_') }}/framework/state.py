@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 state.py
     Implements a state management system that works seamlessly with BotCity Orchestrator features.
     The State class maintains the execution state of automation tasks, providing features such as:
-        - Count successfull and failed items
+        - Count successful and failed items
         - Check for interruption request
         - Stores WebBot(), DesktopBot() instances
         - And more
@@ -92,48 +92,54 @@ class State:
         return asdict(self)
 
 
-'''
-Initializes the STATE variable based on the execution environment.
-It checks if the bot is running in BotCity Runner environment or locally with/without authentication.
-Returns: STATE
-'''
-
 load_dotenv()
 SERVER = os.getenv('SERVER')
 LOGIN = os.getenv('LOGIN')
 KEY = os.getenv('KEY')
 TASK_ID = os.getenv('TASK_ID')
 
-try:
-    if BotMaestroSDK.from_sys_args().server != '':
-        STATE = State()
-        STATE.maestro = BotMaestroSDK.from_sys_args()
-        STATE.task_id = STATE.maestro.task_id
-        STATE.execution = STATE.maestro.get_execution(STATE.task_id)
+
+def init_state() -> State:
+    """
+    Detects how the bot is running and builds STATE accordingly - fully automatic:
+      1. Started from the BotCity Runner   -> use the args it passed in
+      2. .env filled in                    -> try logging in with those credentials
+      3. Neither (or .env login fails)     -> local test mode, no auth
+    Returns: STATE
+    """
+    state = State()
+
+    runner_args = BotMaestroSDK.from_sys_args()
+
+    if runner_args.server:
+        state.maestro = runner_args
+        state.task_id = state.maestro.task_id
+        state.execution = state.maestro.get_execution(state.task_id)
         print("\n ######### Bot is running in a BotCity Runner environment. \n")
-    elif all((SERVER, LOGIN, KEY, TASK_ID)):
+        return state
+
+    if all((SERVER, LOGIN, KEY, TASK_ID)):
         # Set your credentials in the .env file order to run your bot locally
         # with connection to the Orchestrator.
-        STATE = State()
-        STATE.maestro = BotMaestroSDK()
-        STATE.maestro.login(
-            server=SERVER, login=LOGIN, key=KEY,)
+        state.maestro = BotMaestroSDK()
+        try:
+            state.maestro.login(server=SERVER, login=LOGIN, key=KEY)
+            state.task_id = TASK_ID
+            state.execution = state.maestro.get_execution(state.task_id)
+            print("\n ######### Bot is running locally with connection to the Orchestrator. \n")
+            return state
+        except Exception as ex:
+            print(f"Error: {ex}")
 
-        STATE.task_id = TASK_ID
-        STATE.execution = STATE.maestro.get_execution(STATE.task_id)
-        print("\n ######### Bot is running locally with connection to the Orchestrator. \n")
-    else:
-        raise Exception(
-            "No valid .env configuration found. Set your credentials in the .env file order to run your bot locally.")
-except Exception as e:
-    # If any error occurs, we assume the bot is running locally without
-    # authentication.
-    print(f"Error: {e}")
-    STATE = State()
-    STATE.maestro = BotMaestroSDK()
+    # No Runner args, no usable .env -> local test mode, no auth
+    state.maestro = BotMaestroSDK()
     # Disable errors if we are not connected to the Orchestrator
-    STATE.maestro.RAISE_NOT_CONNECTED = False
+    state.maestro.RAISE_NOT_CONNECTED = False
     # Opt-in to receive mock objects when not connected to the Orchestrator
-    STATE.maestro.MOCK_OBJECT_WHEN_DISCONNECTED = True
-    STATE.execution = STATE.maestro.get_execution(STATE.task_id)
+    state.maestro.MOCK_OBJECT_WHEN_DISCONNECTED = True
+    state.execution = state.maestro.get_execution(state.task_id)
     print("\n ######### Bot is running in test mode (locally without authentication). \n")
+    return state
+
+
+STATE = init_state()

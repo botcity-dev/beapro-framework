@@ -1,15 +1,14 @@
-from .datasources import *  # test
-from .exceptions import SystemException, BusinessException, InterruptException
-from .state import STATE
-import logging
-
-logger = logging.getLogger(__name__)
-
-
-'''
+"""
 process.py
     Add the steps to your automation process here.
-'''
+"""
+
+import logging
+
+from .exceptions import BusinessException, InterruptException, SystemException
+from .state import STATE
+
+logger = logging.getLogger(__name__)
 
 
 def process_item(item):
