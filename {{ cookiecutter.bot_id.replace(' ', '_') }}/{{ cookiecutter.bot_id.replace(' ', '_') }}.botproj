@@ -1,1 +1,7 @@
-{"name":"{{ cookiecutter.bot_id.replace(' ', '_') }}","sourceDirPath":"/","resourceDirPath":"/resources/","sourceDirRelative":true,"resourceDirRelative":true}
+{
+    "name": "{{ cookiecutter.bot_id.replace(' ', '_') }}",
+    "sourceDirPath": "/",
+    "resourceDirPath": "/resources/",
+    "sourceDirRelative": true,
+    "resourceDirRelative": true
+}
